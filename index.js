@@ -69,7 +69,7 @@ app.put('/api/todos/:id', (req, res) => {
     return res.status(404).json({ error: 'Todo not found' });
   }
 
-  // ✅ toggle จริง
+
   todos[todoIndex].completed = !todos[todoIndex].completed;
 
   writeTodos(todos);
