@@ -26,21 +26,19 @@ async function fetchTodos() {
 // Add a new todo
 async function addTodo() {
     const text = todoInput.value.trim();
-    
+
     if (!text) {
         alert('Please enter a todo');
         return;
     }
-    
+
     try {
         const response = await fetch(API_BASE, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text }),
         });
-        
+
         if (response.ok) {
             const newTodo = await response.json();
             todos.push(newTodo);
@@ -61,7 +59,7 @@ async function toggleTodo(id) {
         const response = await fetch(`${API_BASE}/${id}`, {
             method: 'PUT',
         });
-        
+
         if (response.ok) {
             const updatedTodo = await response.json();
             const index = todos.findIndex(t => t.id === id);
@@ -84,7 +82,7 @@ async function deleteTodo(id) {
         const response = await fetch(`${API_BASE}/${id}`, {
             method: 'DELETE',
         });
-        
+
         if (response.ok) {
             todos = todos.filter(t => t.id !== id);
             renderTodos();
@@ -97,7 +95,34 @@ async function deleteTodo(id) {
     }
 }
 
-// Render todos to the DOM
+// Edit todo text
+async function editTodo(id) {
+    const newText = prompt("Enter new todo text:");
+
+    if (!newText || newText.trim() === "") {
+        alert("Todo text cannot be empty");
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: newText.trim() })
+        });
+
+        if (response.ok) {
+            fetchTodos(); // Refresh list from backend
+        } else {
+            alert("Failed to update todo");
+        }
+    } catch (error) {
+        console.error('Error editing todo:', error);
+        alert("Failed to update todo");
+    }
+}
+
+// Render todos
 function renderTodos() {
     if (todos.length === 0) {
         todoList.innerHTML = '<div class="empty-state">No todos yet. Add one above!</div>';
@@ -111,11 +136,18 @@ function renderTodos() {
                     onchange="toggleTodo(${todo.id})"
                 />
                 <span class="todo-text">${escapeHtml(todo.text)}</span>
-                <button class="delete-btn" onclick="deleteTodo(${todo.id})">Delete</button>
+
+                <button onclick="editTodo(${todo.id})">
+                    Edit
+                </button>
+
+                <button class="delete-btn" onclick="deleteTodo(${todo.id})">
+                    Delete
+                </button>
             </div>
         `).join('');
     }
-    
+
     updateStats();
 }
 
@@ -127,7 +159,7 @@ function updateStats() {
     completedCount.textContent = `Completed: ${completed}`;
 }
 
-// Escape HTML to prevent XSS
+// Escape HTML (XSS protection)
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
@@ -136,6 +168,7 @@ function escapeHtml(text) {
 
 // Event listeners
 addBtn.addEventListener('click', addTodo);
+
 todoInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         addTodo();
