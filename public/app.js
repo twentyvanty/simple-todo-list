@@ -122,20 +122,23 @@ async function editTodo(id) {
     }
 }
 
-// Render todos
 function renderTodos() {
     if (todos.length === 0) {
         todoList.innerHTML = '<div class="empty-state">No todos yet. Add one above!</div>';
     } else {
         todoList.innerHTML = todos.map(todo => `
             <div class="todo-item ${todo.completed ? 'completed' : ''}">
+                
                 <input 
                     type="checkbox" 
                     class="todo-checkbox" 
                     ${todo.completed ? 'checked' : ''} 
                     onchange="toggleTodo(${todo.id})"
                 />
-                <span class="todo-text">${escapeHtml(todo.text)}</span>
+
+                <span class="todo-text">
+                    ${escapeHtml(todo.text)}
+                </span>
 
                 <button onclick="editTodo(${todo.id})">
                     Edit
@@ -144,12 +147,14 @@ function renderTodos() {
                 <button class="delete-btn" onclick="deleteTodo(${todo.id})">
                     Delete
                 </button>
+
             </div>
         `).join('');
     }
 
     updateStats();
 }
+
 
 // Update statistics
 function updateStats() {
